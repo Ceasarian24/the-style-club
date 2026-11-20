@@ -1,0 +1,66 @@
+﻿{% extends "base.html" %}
+{% block title %}Sign In - The Style Club{% endblock %}
+
+{% block content %}
+<section class="auth">
+  <div class="auth-image">
+    <img src="{{ url_for('static', filename='img/login.png') }}" alt="">
+  </div>
+
+  <div class="auth-form">
+    <h1>SIGN IN TO YOUR ACCOUNT</h1>
+    <p class="subtitle">Welcome back. Enter your details to continue.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p class="flash {{ category }}">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="field">
+        <label for="email">Email Address</label>
+        {{ form.email(placeholder="Enter your email", autocomplete="email") }}
+        {% for e in form.email.errors %}<small class="error">{{ e }}</small>{% endfor %}
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        {{ form.password(placeholder="Enter your password", autocomplete="current-password") }}
+        {% for e in form.password.errors %}<small class="error">{{ e }}</small>{% endfor %}
+      </div>
+
+      <div class="row-between">
+        <label class="check">{{ form.remember() }} REMEMBER ME</label>
+        <a href="{{ url_for('auth.forgot') }}" class="forgot">FORGOT PASSWORD?</a>
+      </div>
+
+      <button type="submit" class="btn btn-primary">SIGN IN</button>
+    </form>
+
+    <p class="or">OR</p>
+    <a href="{{ url_for('auth.google_login') }}" class="btn btn-outline">SIGN IN WITH GOOGLE</a>
+
+    <p class="switch">Don't have an account? <a href="{{ url_for('auth.register') }}">CREATE ACCOUNT</a></p>
+  </div>
+</section>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="auth-alerts">
+      {% for category, message in messages %}
+        <div class="auth-alert auth-alert--{{ category }}" role="alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+{% endblock %}

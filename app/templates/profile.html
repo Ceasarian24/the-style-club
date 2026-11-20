@@ -1,0 +1,288 @@
+﻿{% extends "base.html" %}
+{% block title %}My Profile - The Style Club{% endblock %}
+
+{% block content %}
+{% set addr_parts = [current_user.street_address, current_user.apartment, current_user.city,
+                     current_user.province, current_user.postal_code, current_user.country] | select | list %}
+{% set status_labels = {'to_pay': 'To Pay', 'to_ship': 'To Ship', 'to_receive': 'To Receive', 'delivered': 'Delivered', 'cancelled': 'Cancelled'} %}
+<div class="pf-page">
+
+  <section class="pf-top">
+    <div class="pf-user">
+      <button type="button" class="pf-avatar-btn" id="avatarBtn" aria-label="Profile photo options">
+        <span class="pf-avatar">
+          {% if current_user.avatar %}
+            <img src="{{ url_for('static', filename=current_user.avatar) }}" alt="Profile photo">
+          {% else %}
+            {{ (current_user.full_name or current_user.email)[:1]|upper }}
+          {% endif %}
+        </span>
+      </button>
+      <div>
+        <h1 class="pf-name">{{ current_user.full_name or current_user.email.split('@')[0] }}</h1>
+        <p class="pf-email">{{ current_user.email }}</p>
+      </div>
+    </div>
+    <div class="pf-actions">
+      <a class="pf-btn" href="{{ url_for('auth.edit_profile') }}">Edit Profile <span>&rarr;</span></a>
+    </div>
+  </section>
+
+  <nav class="pf-tabs">
+    <a href="{{ url_for('auth.account') }}" class="{{ 'on' if tab == 'profile' }}">Profile</a>
+    <a href="{{ url_for('auth.account', tab='orders') }}" class="{{ 'on' if tab == 'orders' }}">Orders</a>
+    <a href="{{ url_for('auth.account', tab='addresses') }}" class="{{ 'on' if tab == 'addresses' }}">Addresses</a>
+  </nav>
+
+  {% if tab == 'profile' %}
+    <h2 class="pf-title">Account Details</h2>
+    <div class="pf-card">
+      <div class="pf-row">
+        <span class="pf-label">Full name</span>
+        <span class="pf-value">{{ current_user.full_name or 'Not set yet' }}</span>
+      </div>
+      <div class="pf-row">
+        <span class="pf-label">Email</span>
+        <span class="pf-value">{{ current_user.email }}</span>
+      </div>
+      <div class="pf-row">
+        <span class="pf-label">Email status</span>
+        <span class="pf-value">{{ 'Verified' if current_user.email_verified else 'Not verified' }}</span>
+      </div>
+      <div class="pf-row">
+        <span class="pf-label">Password</span>
+           <a class="pf-link" href="{{ url_for('auth.change_password') }}">Change password</a>
+      </div>
+      <div class="pf-row">
+        <span class="pf-label">Phone number</span>
+        <span class="pf-value">{{ current_user.phone or 'Not set yet' }}</span>
+      </div>
+    </div>
+
+    {% elif tab == 'orders' %}
+    <h2 class="pf-title">My Orders</h2>
+    <div class="pf-pills">
+      {% for key, label in [('all','All'), ('to_pay','To Pay'), ('to_ship','To Ship'), ('to_receive','To Receive'), ('delivered','Delivered'), ('cancelled','Cancelled')] %}
+        <a href="{{ url_for('auth.account', tab='orders', status=key) }}" class="pf-pill {{ 'on' if status == key }}">{{ label }}</a>
+      {% endfor %}
+    </div>
+
+    {% if orders %}
+      <div class="ord-list">
+        {% for o in orders %}
+          {% set first = o.items[0] if o.items else None %}
+          {% set img = first.variant.product.images[0].path if (first and first.variant and first.variant.product.images) else None %}
+          {% set more = o.items|length - 1 %}
+          <div class="ord-card">
+            <div class="ord-thumb">
+              {% if img %}<img src="{{ url_for('static', filename=img) }}" alt="">{% endif %}
+            </div>
+
+            <div class="ord-info">
+              <p class="ord-code">Order #{{ o.code }}</p>
+              <p class="ord-name">
+                {{ first.product_name if first else '' }}{% if first and first.size %} <span>· {{ first.size }}</span>{% endif %}{% if first and (first.material or (first.variant and first.variant.material)) %} <span>· {{ first.material or first.variant.material }}</span>{% endif %}
+                {% if more > 0 %}<span>+{{ more }} more</span>{% endif %}
+              </p>
+              <p class="ord-date">Placed on {{ o.created_at.strftime('%b %d, %Y') }}</p>
+            </div>
+
+            <div class="ord-side">
+              <span class="ord-status od-{{ o.status }}">{{ status_labels.get(o.status, o.status) }}</span>
+              <strong class="ord-total">{{ o.total_cents|peso }}</strong>
+              {% if o.status == 'to_pay' %}
+                <a class="ord-btn ord-btn-dark" href="#">Pay Now</a>
+              {% elif o.status in ('delivered', 'cancelled') %}
+                <form method="post" action="{{ url_for('cart.buy_again', order_id=o.id) }}" style="display:inline;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="ord-btn ord-btn-dark">Buy Again</button>
+                </form>
+              {% else %}
+              <a class="ord-btn ord-btn-line" href="{{ url_for('auth.order_detail', order_id=o.id) }}">View Details</a>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="pf-empty">
+        <p>No orders yet.</p>
+        <p><a href="{{ url_for('shop.shop_all') }}">Start shopping</a></p>
+      </div>
+    {% endif %}
+
+  {% elif tab == 'addresses' %}
+    <h2 class="pf-title">Delivery &amp; Contact</h2>
+    <div class="pf-card">
+      <div class="pf-row">
+        <span class="pf-label">Full name</span>
+        <span class="pf-value">{{ current_user.full_name or 'Not set yet' }}</span>
+      </div>
+      <div class="pf-row">
+        <span class="pf-label">Phone number</span>
+        <span class="pf-value">{{ current_user.phone or 'Not set yet' }}</span>
+      </div>
+      <div class="pf-row">
+        <span class="pf-label">Address</span>
+        <span class="pf-value">{{ addr_parts | join(', ') if addr_parts else 'Not set yet' }}</span>
+      </div>
+      <div class="pf-row">
+        <span class="pf-label">Delivery instructions</span>
+        <span class="pf-value multi">{{ current_user.delivery_instructions or 'None' }}</span>
+      </div>
+      <div class="pf-row">
+        <span class="pf-label">Delivery preference</span>
+        <span class="pf-value">
+          {% if current_user.delivery_preference == 'express' %}Express Shipping (1-2 Business Days)
+          {% elif current_user.delivery_preference %}Standard Shipping (3-5 Business Days)
+          {% else %}Not set yet{% endif %}
+        </span>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="pf-signout">
+    <a class="pf-logout-btn" href="{{ url_for('auth.logout') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Log out
+    </a>
+  </div>
+
+</div>
+
+<!-- Popup: avatar options -->
+<div class="pop-modal" id="avatarMenu" hidden>
+  <div class="pop-box">
+    <h3>Profile photo</h3>
+    <button type="button" class="pop-opt" id="pickPhoto">Upload photo</button>
+    {% if current_user.avatar %}
+    <form method="post" action="{{ url_for('auth.remove_avatar') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="pop-opt pop-danger">Delete photo</button>
+    </form>
+    {% endif %}
+    <button type="button" class="pop-close" id="menuClose">Close</button>
+  </div>
+</div>
+
+<!-- Hidden file input used by Upload photo -->
+<input type="file" id="avatarInput" accept="image/png,image/jpeg,image/webp" hidden>
+
+<!-- Crop dialog (opens after choosing a file) -->
+<div class="crop-modal" id="cropModal" hidden>
+  <div class="crop-box">
+    <h3>Adjust your photo</h3>
+    <p class="crop-hint">Drag to move. Use the slider to zoom.</p>
+    <div class="crop-view" id="cropView">
+      <img id="cropImg" alt="">
+    </div>
+    <input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1">
+    <div class="crop-actions">
+      <button type="button" class="crop-cancel" id="cropCancel">Cancel</button>
+      <button type="button" class="crop-save" id="cropSave">Save photo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const menu = document.getElementById("avatarMenu");
+  const avatarBtn = document.getElementById("avatarBtn");
+  const pickBtn = document.getElementById("pickPhoto");
+  const input = document.getElementById("avatarInput");
+  const modal = document.getElementById("cropModal");
+  const view = document.getElementById("cropView");
+  const img = document.getElementById("cropImg");
+  const zoom = document.getElementById("cropZoom");
+  const V = 300, OUT = 400;
+  let base = 1, s = 1, ox = 0, oy = 0, drag = null;
+
+  // avatar popup
+  avatarBtn.addEventListener("click", () => menu.hidden = false);
+  document.getElementById("menuClose").addEventListener("click", () => menu.hidden = true);
+  menu.addEventListener("click", e => { if (e.target === menu) menu.hidden = true; });
+  pickBtn.addEventListener("click", () => {
+    menu.hidden = true;
+    input.click();
+  });
+
+  // crop logic
+  function clamp() {
+    const w = img.naturalWidth * s, h = img.naturalHeight * s;
+    ox = Math.min(0, Math.max(V - w, ox));
+    oy = Math.min(0, Math.max(V - h, oy));
+  }
+  function draw() {
+    clamp();
+    img.style.width = img.naturalWidth * s + "px";
+    img.style.height = img.naturalHeight * s + "px";
+    img.style.transform = `translate(${ox}px, ${oy}px)`;
+  }
+
+  input.addEventListener("change", () => {
+    const file = input.files[0];
+    if (!file) return;
+    img.onload = () => {
+      base = V / Math.min(img.naturalWidth, img.naturalHeight);
+      zoom.value = 1;
+      s = base;
+      ox = (V - img.naturalWidth * s) / 2;
+      oy = (V - img.naturalHeight * s) / 2;
+      draw();
+      modal.hidden = false;
+    };
+    img.src = URL.createObjectURL(file);
+  });
+
+  zoom.addEventListener("input", () => {
+    const old = s;
+    s = base * parseFloat(zoom.value);
+    const cx = (V / 2 - ox) / old, cy = (V / 2 - oy) / old;
+    ox = V / 2 - cx * s;
+    oy = V / 2 - cy * s;
+    draw();
+  });
+
+  view.addEventListener("pointerdown", e => {
+    drag = { x: e.clientX, y: e.clientY, ox, oy };
+    view.setPointerCapture(e.pointerId);
+  });
+  view.addEventListener("pointermove", e => {
+    if (!drag) return;
+    ox = drag.ox + (e.clientX - drag.x);
+    oy = drag.oy + (e.clientY - drag.y);
+    draw();
+  });
+  view.addEventListener("pointerup", () => drag = null);
+
+  document.getElementById("cropCancel").addEventListener("click", () => {
+    modal.hidden = true;
+    input.value = "";
+  });
+
+  document.getElementById("cropSave").addEventListener("click", () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = OUT;
+    const ctx = canvas.getContext("2d");
+    const sx = -ox / s, sy = -oy / s, size = V / s;
+    ctx.drawImage(img, sx, sy, size, size, 0, 0, OUT, OUT);
+    canvas.toBlob(async blob => {
+      const form = new FormData();
+      form.append("avatar", blob, "avatar.png");
+      const token = document.querySelector('meta[name=csrf-token]').content;
+      const res = await fetch("{{ url_for('auth.upload_avatar') }}", {
+        method: "POST",
+        headers: { "X-CSRFToken": token },
+        body: form
+      });
+      if (res.ok) location.reload();
+      else alert("Could not save the photo. Please try again.");
+    }, "image/png");
+  });
+})();
+</script>
+{% endblock %}

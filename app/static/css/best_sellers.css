@@ -1,0 +1,57 @@
+/* ===== Best Sellers Banner ===== */
+.bestsellers-banner {
+  background: var(--dark);
+  padding: 52px 5% 60px;
+  margin-top: 28px;
+}
+
+.bestsellers-banner .banner-card {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  overflow: hidden;
+  aspect-ratio: 16 / 10.5;
+}
+
+.bestsellers-banner .banner-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%; /* adjust this freely for your Best Sellers photo */
+  display: block;
+}
+
+.bestsellers-banner .banner-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.05) 45%, transparent 100%);
+  pointer-events: none;
+}
+
+.bestsellers-banner .banner-title {
+  position: absolute;
+  left: 38px;
+  bottom: 26px;
+  z-index: 2;
+  margin: 0;
+  color: #fff;
+  font-family: "DM Serif Display", serif;
+  font-weight: 400;
+  font-size: clamp(48px, 6.8vw, 84px);
+  line-height: 1;
+  letter-spacing: 1.5px;
+}
+
+@media (max-width: 800px) {
+  .bestsellers-banner .banner-card {
+    aspect-ratio: auto;
+    height: 340px;
+  }
+  .bestsellers-banner .banner-title {
+    left: 22px;
+    bottom: 18px;
+  }
+}

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Create Account - The Style Club{% endblock %}
+
+{% block content %}
+<section class="auth">
+  <div class="auth-image">
+    <img src="{{ url_for('static', filename='img/register.png') }}" alt="">
+  </div>
+
+  <div class="auth-form">
+    <h1>CREATE YOUR ACCOUNT</h1>
+    <p class="subtitle">Join the Style Club and enjoy exclusive benefits.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p class="flash {{ category }}">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="field">
+        <label for="email">Email Address</label>
+        {{ form.email(placeholder="Enter your email", autocomplete="email") }}
+        {% for e in form.email.errors %}<small class="error">{{ e }}</small>{% endfor %}
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        {{ form.password(placeholder="Create a password", autocomplete="new-password") }}
+        {% for e in form.password.errors %}<small class="error">{{ e }}</small>{% endfor %}
+      </div>
+
+      <div class="field">
+        <label for="confirm">Confirm Password</label>
+        {{ form.confirm(placeholder="Re-enter password", autocomplete="new-password") }}
+        {% for e in form.confirm.errors %}<small class="error">{{ e }}</small>{% endfor %}
+      </div>
+
+      <label class="check terms">
+        {{ form.agree() }}
+        <span>I agree to the <a href="#" data-legal="terms">Terms of Sale</a> and <a href="#" data-legal="privacy">Privacy Policy</a></span>
+      </label>
+      {% for e in form.agree.errors %}<small class="error">{{ e }}</small>{% endfor %}
+
+      <button type="submit" class="btn btn-primary">CREATE ACCOUNT</button>
+    </form>
+
+    <p class="or divider"><span>OR</span></p>
+    <a href="{{ url_for('auth.google_login') }}" class="btn btn-outline">CREATE ACCOUNT WITH GOOGLE</a>
+
+    <p class="switch">Already have an account? <a href="{{ url_for('auth.login') }}">Sign In</a></p>
+  </div>
+</section>
+
+<div class="legal-modal" id="legalModal" hidden>
+  <div class="legal-box">
+    <div class="legal-head">
+      <h3 id="legalTitle">Terms of Sale</h3>
+      <button type="button" id="legalClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="legal-body" id="legalBody"></div>
+  </div>
+</div>
+
+<style>
+  .legal-modal {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, .5);
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem; z-index: 1000;
+  }
+  .legal-modal[hidden] { display: none; }
+  .legal-box {
+    background: #fff; max-width: 540px; width: 100%; max-height: 80vh;
+    border-radius: 8px; padding: 1.5rem; display: flex; flex-direction: column;
+  }
+  .legal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #e5e5e5; padding-bottom: .75rem; margin-bottom: 1rem;
+  }
+  .legal-head h3 { margin: 0; font-size: 1.15rem; }
+  .legal-head button {
+    background: none; border: none; font-size: 1.5rem; cursor: pointer; line-height: 1;
+  }
+  .legal-body { overflow-y: auto; font-size: .92rem; line-height: 1.6; color: #333; }
+  .legal-body p { margin-bottom: .85rem; }
+</style>
+
+<script>
+(function () {
+  const modal = document.getElementById("legalModal");
+  const title = document.getElementById("legalTitle");
+  const body = document.getElementById("legalBody");
+
+  const CONTENT = {
+    terms: {
+      title: "Terms of Sale",
+      html: `
+        <p><strong>1. Orders & Pricing:</strong> All prices on The Style Club are listed in Philippine Pesos (₱) and are subject to stock availability. An order is confirmed once payment or Cash on Delivery verification is completed.</p>
+        <p><strong>2. Shipping & Delivery:</strong> Standard Local shipping takes 3–5 business days nationwide, and Express shipping takes 1–2 business days within Metro Manila and major cities.</p>
+        <p><strong>3. Returns & Exchanges:</strong> Unused items with original tags and packaging intact may be returned or exchanged within 14 days of delivery.</p>
+      `
+    },
+    privacy: {
+      title: "Privacy Policy",
+      html: `
+        <p><strong>1. Information We Collect:</strong> We collect your name, email address, phone number, and delivery address solely to process orders, verify your account, and provide customer support.</p>
+        <p><strong>2. Data Sharing:</strong> Your shipping details are shared only with our supported logistics partners to fulfill your deliveries. We never sell your personal information.</p>
+        <p><strong>3. Your Rights:</strong> You may update your profile details or request account deletion at any time through your account settings.</p>
+      `
+    }
+  };
+
+  document.querySelectorAll("[data-legal]").forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const doc = CONTENT[link.dataset.legal];
+      if (!doc) return;
+      title.textContent = doc.title;
+      body.innerHTML = doc.html;
+      modal.hidden = false;
+    });
+  });
+
+  document.getElementById("legalClose").addEventListener("click", () => modal.hidden = true);
+  modal.addEventListener("click", e => { if (e.target === modal) modal.hidden = true; });
+})();
+</script>
+{% endblock %}

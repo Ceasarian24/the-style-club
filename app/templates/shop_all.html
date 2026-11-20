@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Shop All — The Style Club{% endblock %}
+
+{% block content %}
+<!-- ===== EDITORIAL HERO ===== -->
+<section class="shop-hero">
+  <div class="shop-hero-inner">
+    <div class="hero-photo-left">
+      <img src="{{ url_for('static', filename='img/shop_all/hero-left.png') }}" alt="The Collection Look 1">
+    </div>
+
+    <div class="hero-heading">
+      <p class="hero-eyebrow">THE COLLECTION</p>
+      <h1 class="hero-display">shop all</h1>
+    </div>
+
+    <div class="hero-photo-right">
+      <img src="{{ url_for('static', filename='img/shop_all/hero-right.png') }}" alt="The Collection Look 2">
+    </div>
+
+    <p class="hero-quote">
+      Discover enduring design,<br>
+      crafted with intention and<br>
+      made for the way you live
+    </p>
+  </div>
+</section>
+
+<!-- ===== EXPLORE SHOP ===== -->
+<section class="shop-section">
+  <div class="shop-container">
+    <h2 class="section-heading">EXPLORE SHOP</h2>
+
+    <div class="explore-shop-grid">
+  <a href="{{ url_for('shop.shop_detail', shop_slug='the-handbag-club') }}" class="shop-brand-card">
+    <img src="{{ url_for('static', filename='img/shop_all/shop-handbag-club.png') }}" alt="The Handbag Club">
+    <span class="card-label-dark">VISIT SHOP</span>
+  </a>
+
+  <a href="{{ url_for('shop.shop_detail', shop_slug='wardrobe-edit') }}" class="shop-brand-card">
+    <img src="{{ url_for('static', filename='img/shop_all/shop-wardrobe-edit.png') }}" alt="Wardrobe Edit">
+    <span class="card-label-dark">VISIT SHOP</span>
+  </a>
+</div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

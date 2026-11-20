@@ -1,0 +1,84 @@
+﻿{% extends "base.html" %}
+{% block title %}Shopping Bag - The Style Club{% endblock %}
+
+{% block content %}
+<div class="cart-page">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <p class="flash {{ category }}">{{ message }}</p>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="cart-head">
+    <h1>Shopping Bag</h1>
+    <span>{{ items|length }} {{ "Item" if items|length == 1 else "Items" }}</span>
+  </div>
+
+  {% if items %}
+    <form id="cartForm" method="post" action="{{ url_for('cart.checkout_select') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    </form>
+    <ul class="cart-list">
+      {% for i in items %}
+        {% set v = i.variant %}
+        {% set p = v.product %}
+        <li class="cart-item">
+          <div class="cart-thumb">
+            {% set v_imgs = p.images|selectattr('variant_id', 'equalto', v.id)|list %}
+            {% if not v_imgs %}
+              {% set same_color_ids = p.variants|selectattr('color_name', 'equalto', v.color_name)|map(attribute='id')|list %}
+              {% set v_imgs = p.images|selectattr('variant_id', 'in', same_color_ids)|list %}
+            {% endif %}
+            {% set img_path = v_imgs[0].path if v_imgs else (p.images[0].path if p.images else '') %}
+            {% if img_path %}<img src="{{ url_for('static', filename=img_path) }}" alt="{{ p.name }}">{% endif %}
+          </div>
+
+          <div class="cart-info">
+            <label class="cart-pick">
+              <input type="checkbox" class="pick" name="pick" value="{{ v.id }}" form="cartForm">
+              <span class="cart-name">{{ p.name }}</span>
+            </label>
+            <p class="cart-meta">Color: {{ v.color_name }}{% if v.size %} &middot; Size: {{ v.size }}{% endif %}{% if v.material %} &middot; Material: {{ v.material }}{% endif %}</p>
+            <p class="cart-sold">Sold By: {{ p.shop.name }}</p>
+          </div>
+
+          <div class="cart-side">
+            <form method="post" action="{{ url_for('cart.update') }}" class="qty-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="variant_id" value="{{ v.id }}">
+              <button type="submit" name="qty" value="{{ i.qty - 1 }}" {{ 'disabled' if i.qty <= 1 }} aria-label="Decrease">&minus;</button>
+              <span>{{ i.qty }}</span>
+              <button type="submit" name="qty" value="{{ i.qty + 1 }}" {{ 'disabled' if i.qty >= v.stock }} aria-label="Increase">+</button>
+            </form>
+            <p class="cart-price">{{ i.line|peso }}</p>
+            <form method="post" action="{{ url_for('cart.remove') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="variant_id" value="{{ v.id }}">
+              <button type="submit" class="cart-remove">Remove</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div class="cart-foot">
+      <span class="cart-selected" id="selectedCount">{{ items|length }} items selected</span>
+            <button type="submit" form="cartForm" class="place-order">Place Order &rarr;</button>
+    </div>
+  {% else %}
+    <p class="cart-empty">Your bag is empty.</p>
+    <p class="cart-empty"><a href="{{ url_for('shop.shop_all') }}">Continue shopping</a></p>
+  {% endif %}
+</div>
+
+<script>
+  // update the "items selected" count when checkboxes change
+  const picks = document.querySelectorAll(".pick");
+  const selected = document.getElementById("selectedCount");
+  function updateCount() {
+    const n = [...picks].filter(p => p.checked).length;
+    if (selected) selected.textContent = n + (n === 1 ? " item selected" : " items selected");
+  }
+  picks.forEach(p => p.addEventListener("change", updateCount));
+</script>
+{% endblock %}

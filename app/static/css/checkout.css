@@ -1,0 +1,291 @@
+﻿/* ===== Checkout ===== */
+.co-page { padding: 0 5% 60px; max-width: 1200px; margin: 0 auto; }
+
+.co-back {
+  display: inline-block; margin: 28px 0 22px; font-size: 16px; font-weight: 700;
+  text-decoration: none; color: var(--text);
+}
+
+.co-address {
+  display: flex; justify-content: space-between; align-items: center;
+  border: 1px solid var(--maroon); border-radius: 4px; padding: 20px 24px; margin-bottom: 36px;
+}
+.co-address-main { display: flex; gap: 18px; align-items: center; }
+.co-address-main svg { width: 22px; height: 22px; fill: var(--maroon); flex: none; }
+.co-addr-name { margin: 0 0 6px; font-size: 17px; font-weight: 700; }
+.co-addr-name span { font-size: 14px; font-weight: 500; margin-left: 6px; color: var(--muted); }
+.co-addr-line { margin: 0; font-size: 14px; font-weight: 600; }
+.co-change { color: var(--maroon); font-size: 18px; font-weight: 700; text-decoration: none; }
+
+.co-heading {
+  font-family: "Libre Baskerville", serif; font-size: 22px; font-weight: 700;
+  color: var(--text); text-transform: uppercase; letter-spacing: 0.5px;
+  margin: 0 0 18px; padding-bottom: 14px; border-bottom: 4px solid var(--dark);
+}
+
+.co-summary { margin-bottom: 48px; }
+.co-sum-head, .co-line {
+  display: grid; grid-template-columns: 2.4fr 0.8fr 1fr 1fr; gap: 16px; align-items: center;
+}
+.co-sum-head {
+  font-family: "Libre Baskerville", serif; font-weight: 700; font-size: 15px;
+  text-transform: uppercase; padding: 0 0 14px; border-bottom: 1px solid transparent;
+}
+.co-line { padding: 16px 0; border-bottom: 1px solid #eee; font-size: 16px; }
+.co-item { display: flex; gap: 20px; align-items: center; }
+.co-thumb { width: 130px; height: 130px; background: #f0eeee; display: flex; align-items: center; justify-content: center; flex: none; }
+.co-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.co-name { margin: 0 0 8px; font-family: "Libre Baskerville", serif; font-size: 17px; font-weight: 700; }
+.co-meta { margin: 0 0 6px; font-size: 13px; font-weight: 700; }
+.co-sold { margin: 0; font-size: 12px; color: var(--muted); }
+.co-strong { font-weight: 700; }
+
+.co-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
+
+.co-ship-form { display: flex; flex-direction: column; gap: 14px; }
+.co-opt {
+  display: flex; align-items: center; gap: 16px; padding: 18px 20px;
+  border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
+}
+.co-opt.on { border: 2px solid var(--text); }
+.co-opt input { width: 18px; height: 18px; accent-color: var(--text); margin: 0; }
+.co-opt-text { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.co-opt-text strong { font-size: 15px; }
+.co-opt-text small { font-size: 13px; color: var(--muted); }
+.co-opt-fee { font-weight: 700; font-size: 15px; }
+
+.co-bill { margin-bottom: 28px; }
+.co-bill-row, .co-bill-total {
+  display: flex; justify-content: space-between; padding: 14px 0; font-size: 16px;
+}
+.co-bill-row { border-bottom: 1px solid #eee; }
+.co-bill-total { font-weight: 700; font-size: 18px; border-top: 1px solid var(--border); margin-top: 8px; }
+
+.co-legal { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0 0 20px; }
+.co-place {
+  width: 100%; height: 56px; border: none; border-radius: 4px; cursor: pointer;
+  background: var(--maroon); color: #fff;
+  font-family: "Libre Baskerville", serif; font-weight: 700; font-size: 20px;
+}
+
+/* ===== Order placed ===== */
+.co-success { text-align: center; padding: 90px 5% 120px; }
+.co-eyebrow { font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--tan); margin: 0 0 14px; }
+.co-success h1 { font-family: "Libre Baskerville", serif; font-size: 48px; margin: 0 0 16px; }
+.co-code { font-size: 18px; font-weight: 700; margin: 0 0 10px; }
+.co-sub-text { color: var(--muted); font-size: 16px; margin: 0 0 36px; }
+.co-success-total {
+  display: inline-flex; gap: 40px; align-items: center; padding: 18px 28px;
+  border: 1px solid var(--border); border-radius: 8px; margin-bottom: 40px;
+}
+.co-success-total span { color: var(--muted); }
+.co-success-total strong { font-size: 22px; }
+.co-success-actions { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.co-btn-dark, .co-btn-line {
+  padding: 14px 28px; border-radius: 999px; text-decoration: none;
+  font-weight: 700; font-size: 15px; border: 1.5px solid var(--dark);
+}
+.co-btn-dark { background: var(--dark); color: #fff; }
+.co-btn-line { color: var(--dark); background: #fff; }
+
+/* ===== Delivery option, voucher and total (checkout) ===== */
+.co-grid { align-items: start; }
+.co-sub { font-size: 12px; letter-spacing: 0.5px; color: var(--muted); margin: -4px 0 16px; }
+
+.co-alt { margin-top: 18px; padding-left: 4px; display: flex; flex-direction: column; gap: 16px; }
+.co-alt[hidden] { display: none; }
+.co-field { display: flex; flex-direction: column; gap: 8px; }
+.co-field label { font-size: 13px; font-weight: 500; }
+.co-field input {
+  height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: 4px;
+  font-family: "DM Sans", sans-serif; font-size: 15px; box-sizing: border-box; width: 100%;
+}
+
+.co-voucher {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 0; margin-top: 24px; border-bottom: 1px solid var(--border);
+  font-size: 15px; font-weight: 500;
+}
+.co-voucher-link { color: var(--muted); font-size: 14px; }
+
+.co-total-line {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 0; font-size: 15px;
+}
+.co-total-line strong { font-size: 16px; }
+
+.co-billing { margin-top: 56px; max-width: 760px; }
+.co-place { display: block; }
+
+/* ===== Voucher popup ===== */
+.co-voucher-open, .co-voucher-remove {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font: inherit; font-size: 14px; color: var(--muted);
+}
+.co-voucher-open:hover { color: var(--text); }
+.co-voucher-applied { font-size: 14px; color: var(--text); display: flex; align-items: center; gap: 10px; }
+.co-voucher-remove { color: var(--maroon); text-decoration: underline; font-weight: 700; }
+
+.vc-modal {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.vc-modal[hidden] { display: none; }
+.vc-box {
+  background: #fff; border-radius: 14px; padding: 26px;
+  width: 100%; max-width: 420px; box-sizing: border-box;
+}
+.vc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.vc-head h3 { font-family: "DM Sans", sans-serif; font-size: 20px; margin: 0; }
+.vc-close { background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--text); }
+
+.vc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.vc-item {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px;
+}
+.vc-item strong { display: block; font-size: 15px; margin-bottom: 4px; }
+.vc-item small { font-size: 13px; color: var(--muted); }
+.vc-apply {
+  background: var(--maroon); color: #fff; border: 1.5px solid var(--maroon);
+  border-radius: 999px; padding: 9px 20px; font-family: "DM Sans", sans-serif;
+  font-weight: 700; font-size: 13px; cursor: pointer; flex: none;
+}
+.vc-applied { font-size: 13px; font-weight: 700; color: var(--muted); flex: none; }
+
+.vc-none { font-size: 14px; color: var(--muted); margin: 0 0 16px; }
+.vc-code { display: flex; gap: 10px; }
+.vc-code input {
+  flex: 1; height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: 4px;
+  font-family: "DM Sans", sans-serif; font-size: 15px; box-sizing: border-box; min-width: 0;
+}
+
+/* ===== Match Figma: full-width billing section, two-column body ===== */
+.co-billing {
+  max-width: none;
+  width: 100%;
+  margin-top: 64px;
+}
+
+.co-billing .co-heading {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.co-billing-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 48px;
+  align-items: start;
+  width: 100%;
+}
+
+.co-billing-left {
+  max-width: 100%;
+  width: 100%;
+}
+
+.co-billing-left .co-bill {
+  max-width: 100%;
+  margin: 18px 0 32px;
+}
+
+.co-billing-left .co-bill-row,
+.co-billing-left .co-bill-total {
+  font-size: 15px;
+}
+
+.co-billing-left .co-bill-row span:last-child,
+.co-billing-left .co-bill-total span:last-child {
+  font-size: 15px;
+}
+
+.co-billing-right {
+  padding-top: 26px;
+  min-width: 0;
+}
+
+.co-billing-right .co-legal {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  text-align: justify;
+}
+
+.co-billing-right .co-legal a {
+  color: var(--text);
+}
+
+.co-billing-left .co-place {
+  display: block;
+  width: 100%;
+  height: 56px;
+  margin-top: 0;
+}
+
+/* ===== Order confirmed ===== */
+.oc-page { padding: 0 5% 80px; max-width: 1200px; margin: 0 auto; }
+
+.oc-back {
+  display: inline-block; margin: 28px 0 0; font-size: 16px; font-weight: 700;
+  text-decoration: none; color: var(--text);
+}
+
+.oc-card {
+  max-width: 500px; margin: 64px auto 0; text-align: center;
+  border: 1px solid var(--maroon); border-radius: 4px;
+  padding: 64px 48px 56px;
+}
+
+.oc-check {
+  width: 150px; height: 150px; border-radius: 50%;
+  background: var(--maroon); margin: 0 auto 36px;
+  display: flex; align-items: center; justify-content: center;
+}
+.oc-check svg { width: 80px; height: 80px; fill: #fff; }
+
+.oc-title {
+  font-family: "Libre Baskerville", serif; font-size: 26px; font-weight: 700;
+  color: var(--maroon); margin: 0 0 32px;
+}
+
+.oc-line { font-size: 16px; color: var(--text); margin: 0 0 14px; letter-spacing: 0.3px; }
+.oc-line strong { font-weight: 700; }
+
+.oc-code { font-size: 14px; color: var(--muted); margin: 26px 0 0; }
+
+.oc-btn {
+  display: inline-block; margin-top: 44px; width: 100%; box-sizing: border-box;
+  padding: 18px 0; background: var(--maroon); color: #fff; text-decoration: none;
+  font-family: "Libre Baskerville", serif; font-weight: 700; font-size: 20px;
+  border-radius: 2px;
+}
+.oc-btn:hover { opacity: 0.92; }
+
+/* ===== PSGC address dropdowns ===== */
+.co-field select {
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-size: 15px;
+  box-sizing: border-box;
+  width: 100%;
+}
+.co-field select:disabled { background: #f5f5f5; color: var(--muted); }
+#alt_region[readonly] { background: #f5f5f5; color: var(--muted); }
+
+@media (max-width: 600px) {
+  .oc-card { padding: 44px 24px 40px; }
+}
+
+@media (max-width: 800px) {
+  .co-billing-grid {
+    grid-template-columns: 1fr;
+    row-gap: 28px;
+  }
+}

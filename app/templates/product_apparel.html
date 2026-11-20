@@ -1,0 +1,285 @@
+﻿{% extends "base.html" %}
+{% block title %}{{ product.name }} - The Style Club{% endblock %}
+
+{% block content %}
+{% set is_bag = product.layout == 'bag' %}
+{% set thumb_end = 5 if is_bag else 4 %}
+
+{# materials offered by this product (bags); empty for apparel and shoes #}
+{% set mats = product.variants|map(attribute='material')|select|unique|list %}
+{% set cur_mat = request.args.get('mat') if request.args.get('mat') in mats else (mats[0] if mats else none) %}
+
+{# colour rows for the chosen material (or all colours when there is no material) #}
+{% if mats %}
+  {% set colors = product.variants|selectattr('material', 'equalto', cur_mat)|unique(attribute='color_name')|list %}
+{% else %}
+  {% set colors = product.variants|unique(attribute='color_name')|list %}
+{% endif %}
+{% set cur_color = request.args.get('color') %}
+{% set matched = colors|selectattr('color_name', 'equalto', cur_color)|list if cur_color else [] %}
+{% set first_variant = matched[0] if matched else (colors[0] if colors else none) %}
+{% set sized = product.variants|selectattr('size')|list %}
+{% set first_color = first_variant.color_name if first_variant else '' %}
+
+{# photos: the first colour's own photos, or the shared photos if it has none #}
+{% set shared_imgs = product.images|selectattr('variant_id', 'none')|list %}
+{% set shared_paths = shared_imgs|map(attribute='path')|list %}
+{% set first_vimgs = product.images|selectattr('variant_id', 'equalto', first_variant.id)|list if first_variant else [] %}
+{% set first_imgs = first_vimgs if first_vimgs else shared_imgs %}
+
+<div class="page">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <p class="flash {{ category }}">{{ message }}</p>
+    {% endfor %}
+  {% endwith %}
+
+  <nav class="crumbs">
+    <a class="back-link" href="{{ url_for('shop.new_arrivals') }}"
+       onclick="if (history.length > 1) { history.back(); return false; }">&lsaquo; Back</a>
+  </nav>
+
+  <section class="pdp">
+    <div class="gallery">
+      <div class="thumbs{{ ' four' if is_bag }}" data-max="{{ thumb_end - 1 }}">
+        {% for img in first_imgs[1:thumb_end] %}
+          <button type="button" class="thumb" aria-label="View photo {{ loop.index }}">
+            <img src="{{ url_for('static', filename=img.path) }}" alt="">
+          </button>
+        {% endfor %}
+      </div>
+      <div class="main-photo">
+        {% if first_imgs %}
+          <img id="mainPhoto" src="{{ url_for('static', filename=first_imgs[0].path) }}" alt="{{ product.name }}">
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="info">
+      <h1 class="p-title">{{ product.name }}</h1>
+      {% if product.is_best_seller %}<span class="badge">Best Seller <span class="star">&#9733;</span></span>{% endif %}
+      <p class="p-price" id="price">{{ first_variant.price_cents|peso if first_variant else "" }}</p>
+
+      <div class="opt-row">
+        <div class="opt-col">
+          <p class="p-label">Colors:</p>
+          <div class="swatches big" id="colors">
+              {% for v in colors %}
+                    <button type="button" class="swatch{{ ' active' if first_variant and v.id == first_variant.id }}"
+                      style="background:{{ v.color_hex }}"
+                      data-imgs='{{ (product.images|selectattr('variant_id', 'equalto', v.id)|map(attribute='path')|list or shared_paths)|tojson }}'
+                      title="{{ v.color_name }}" data-price="{{ v.price_cents|peso }}" data-id="{{ v.id }}"
+                      aria-label="{{ v.color_name }}"></button>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% if is_bag and mats %}
+        <div class="opt-col">
+          <p class="p-label">Material:</p>
+                  <select class="mat-select" aria-label="Material"
+                  onchange="location.href='?mat=' + encodeURIComponent(this.value) + '&color=' + encodeURIComponent(document.querySelector('#colors .swatch.active').getAttribute('aria-label'))">
+            {% for m in mats %}
+              <option value="{{ m }}" {{ 'selected' if m == cur_mat }}>{{ m }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if sized %}
+      <div class="size-block">
+        <p class="p-label">Sizes:</p>
+        <div class="size-grid" id="sizes">
+          {% for v in sized %}
+            <button type="button" class="size-btn{{ ' active' if loop.first and v.color_name == first_color }}"
+                    data-id="{{ v.id }}" data-color="{{ v.color_name }}"
+                    {{ 'hidden' if v.color_name != first_color }}>{{ v.size }}</button>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <form method="post" action="{{ url_for('cart.add') }}" class="buy-row" id="buyForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="variant_id" id="variantId" value="{{ first_variant.id if first_variant else '' }}">
+        <input type="hidden" name="qty" id="qtyInput" value="1">
+        <input type="hidden" name="next" value="{{ url_for('shop.product_detail', slug=product.slug) }}">
+
+        <div class="qty">
+          <button type="button" id="qtyDown" aria-label="Decrease">&#9662;</button>
+          <span id="qty">1</span>
+          <button type="button" id="qtyUp" aria-label="Increase">&#9652;</button>
+        </div>
+
+        <button type="submit" class="btn-tan">ADD TO BAG</button>
+
+        <button type="button"
+                class="wish-btn{{ ' active' if first_variant and (first_variant.id|string) in wishlist_ids }}"
+                id="wishBtn" aria-label="Add to wishlist"
+                aria-pressed="{{ 'true' if first_variant and (first_variant.id|string) in wishlist_ids else 'false' }}">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 21s-7.5-4.6-9.5-9.1C1.1 8.8 3.1 5 6.8 5c2 0 3.4 1.1 4.2 2.4C11.8 6.1 13.2 5 15.2 5c3.7 0 5.7 3.8 4.3 6.9C19.5 16.4 12 21 12 21z"/>
+          </svg>
+        </button>
+      </form>
+      <button type="submit" form="buyForm" name="buy_now" value="1" class="btn-maroon">BUY NOW</button>
+
+      <div class="seller">
+        <div class="seller-logo">
+          {% if product.shop.logo %}<img src="{{ url_for('static', filename=product.shop.logo) }}" alt="">{% endif %}
+        </div>
+        <div class="seller-text">
+          <small>Sold and Fulfilled By</small>
+          <strong>{{ product.shop.name }}</strong>
+        </div>
+        <a class="visit" href="{{ url_for('shop.shop_detail', shop_slug=product.shop.slug) }}">Visit</a>
+      </div>
+
+      <details class="acc">
+          <summary>Product Details</summary>
+          <p>{{ product.description or "Crafted with signature attention to detail and everyday durability." }}</p>
+        </details>
+
+        <details class="acc">
+          <summary>Editor's Notes</summary>
+          <p>{{ product.editor_notes or "A timeless staple designed to elevate your everyday wardrobe." }}</p>
+        </details>
+
+        <details class="acc">
+          <summary>Shipping and Returns</summary>
+          <p>
+            Standard Local delivery takes 3–5 business days nationwide, while Express shipping arrives in 1–2 business days for Metro Manila and major cities.
+            {% if product.layout == 'shoes' %}
+              Unworn footwear in its original box may be returned or exchanged within 14 days of delivery.
+            {% elif product.layout == 'bag' %}
+              Unused items with original tags and packaging intact may be returned or exchanged within 14 days of delivery.
+            {% else %}
+              Unworn garments with original tags attached may be returned or exchanged within 14 days of delivery.
+            {% endif %}
+          </p>
+        </details>
+
+      <div class="share">
+        <span>Share this Product</span>
+        <div>
+          {% for n in ["instagram", "facebook", "x", "tiktok", "youtube"] %}
+            <a href="#" aria-label="{{ n }}"><img src="{{ url_for('static', filename='img/icons/' ~ n ~ '.png') }}" alt=""></a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if related %}
+  <h2 class="big-title">you may also like</h2>
+  <section class="related-grid">
+    {% for p in related %}{% include "_card.html" %}{% endfor %}
+  </section>
+  {% endif %}
+
+  <h2 class="mid-title">reviews</h2>
+  <div class="reviews-space">
+    <p class="reviews-empty">No reviews yet.</p>
+  </div>
+</div>
+
+<script>
+  // swap a thumbnail with the main photo (for the thumbnails rendered by the server)
+  const main = document.getElementById("mainPhoto");
+  document.querySelectorAll(".thumb").forEach(t => t.addEventListener("click", () => {
+    const img = t.querySelector("img");
+    const tmp = main.src; main.src = img.src; img.src = tmp;
+  }));
+
+  // size buttons set the variant that goes to the cart
+  const sizeBtns = document.querySelectorAll("#sizes .size-btn");
+  sizeBtns.forEach(b => b.addEventListener("click", () => {
+    sizeBtns.forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    document.getElementById("variantId").value = b.dataset.id;
+  }));
+
+  // show only the chosen colour's sizes
+  function showSizes(color) {
+    let firstShown = null;
+    sizeBtns.forEach(b => {
+      const on = b.dataset.color === color;
+      b.hidden = !on;
+      b.classList.remove("active");
+      if (on && !firstShown) firstShown = b;
+    });
+    if (firstShown) {
+      firstShown.classList.add("active");
+      document.getElementById("variantId").value = firstShown.dataset.id;
+    }
+  }
+
+  // swap the gallery to the chosen colour's photos
+  function showPhotos(btn) {
+    const paths = JSON.parse(btn.dataset.imgs || "[]");
+    if (!paths.length) return;
+    const thumbs = document.querySelector(".thumbs");
+    const max = Number(thumbs.dataset.max);
+    const mainImg = document.getElementById("mainPhoto");
+    mainImg.src = "/static/" + paths[0];
+    thumbs.innerHTML = "";
+    paths.slice(1, max + 1).forEach((p, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "thumb";
+      b.setAttribute("aria-label", "View photo " + (i + 1));
+      b.innerHTML = '<img src="/static/' + p + '" alt="">';
+      b.addEventListener("click", () => {
+        const t = mainImg.src;
+        mainImg.src = b.querySelector("img").src;
+        b.querySelector("img").src = t;
+      });
+      thumbs.appendChild(b);
+    });
+  }
+
+  // colour swatches: update price, variant, sizes, and photos
+  const colorBtns = document.querySelectorAll("#colors .swatch");
+  colorBtns.forEach(s => s.addEventListener("click", () => {
+    colorBtns.forEach(x => x.classList.remove("active"));
+    s.classList.add("active");
+    document.getElementById("price").textContent = s.dataset.price;
+    document.getElementById("variantId").value = s.dataset.id;
+    showSizes(s.getAttribute("aria-label"));
+    showPhotos(s);
+  }));
+
+  // quantity
+  const qty = document.getElementById("qty");
+  const syncQty = () => document.getElementById("qtyInput").value = qty.textContent;
+  document.getElementById("qtyUp").addEventListener("click", () => {
+    if (+qty.textContent < 10) qty.textContent = +qty.textContent + 1;
+    syncQty();
+  });
+  document.getElementById("qtyDown").addEventListener("click", () => {
+    if (+qty.textContent > 1) qty.textContent = +qty.textContent - 1;
+    syncQty();
+  });
+
+  // wishlist heart: saves to the database on the server
+  const wish = document.getElementById("wishBtn");
+  wish.addEventListener("click", async () => {
+    const token = document.querySelector('meta[name=csrf-token]').content;
+    const res = await fetch("{{ url_for('wishlist.toggle') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded", "X-CSRFToken": token },
+      body: "variant_id=" + document.getElementById("variantId").value
+    });
+    if (res.status === 401) {
+      const data = await res.json();
+      window.location.href = data.login_url || "{{ url_for('auth.login') }}";
+      return;
+    }
+    if (!res.ok) return;
+    const data = await res.json();
+    wish.classList.toggle("active", data.active);
+    wish.setAttribute("aria-pressed", data.active);
+  });
+</script>
+{% endblock %}

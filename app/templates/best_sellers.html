@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Best Sellers — The Style Club{% endblock %}
+
+{% block content %}
+<!-- ===== DARK BANNER HEADER ===== -->
+<section class="bestsellers-banner">
+  <div class="banner-card">
+    <img src="{{ url_for('static', filename='img/bestseller/best-sellers-banner.png') }}" alt="Best Sellers">
+    <h1 class="banner-title">best sellers</h1>
+  </div>
+</section>
+
+<!-- ===== PRODUCT GRID ===== -->
+<div class="page collection-page">
+  <div class="toolbar">
+    <div>
+      <h2 class="toolbar-title">VIEW ALL PRODUCTS</h2>
+      <p class="toolbar-count">{{ products|length }} PRODUCTS</p>
+    </div>
+
+    <form class="sort-form" method="get">
+      <label for="sortSelect">Sort By:</label>
+      <div class="select-pill">
+        <select id="sortSelect" name="sort" onchange="this.form.submit()">
+          <option value="best" {{ 'selected' if sort == 'best' }}>Best Matches</option>
+          <option value="newest" {{ 'selected' if sort == 'newest' }}>Newest</option>
+          <option value="price_asc" {{ 'selected' if sort == 'price_asc' }}>Price: Low to High</option>
+          <option value="price_desc" {{ 'selected' if sort == 'price_desc' }}>Price: High to Low</option>
+        </select>
+      </div>
+    </form>
+  </div>
+
+  <section class="product-grid">
+    {% set hide_best_seller_badge = true %}
+    {% for p in products %}{% include "_card.html" %}{% endfor %}
+  </section>
+</div>
+{% endblock %}

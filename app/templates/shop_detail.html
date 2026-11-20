@@ -1,0 +1,51 @@
+﻿{% extends "base.html" %}
+{% block title %}{{ store.name }} - The Style Club{% endblock %}
+
+{% block content %}
+<div class="sd-wrap sd-{{ store.theme }}">
+  <div class="page">
+
+    <nav class="crumbs">
+      <a href="{{ url_for('shop.shop_all') }}">Shop All</a>
+      <span>&rsaquo;</span>
+      <strong>{{ store.name }}</strong>
+    </nav>
+
+    <section class="sd-hero">
+      <div class="sd-hero-text">
+        <p class="sd-eyebrow">{{ store.eyebrow }}</p>
+        <h1 class="sd-name">{{ store.name }}</h1>
+        <p class="sd-tagline">{{ store.tagline }}</p>
+      </div>
+      <div class="sd-hero-banner">
+        <img src="{{ url_for('static', filename=store.banner) }}" alt="{{ store.name }}">
+      </div>
+    </section>
+
+    <div class="sd-toolbar">
+      <div>
+        <h2 class="sd-title">Shop Products</h2>
+        <p class="sd-count">{{ products|length }} {{ "product" if products|length == 1 else "products" }}</p>
+      </div>
+      <form method="get" class="sd-sort">
+        <label for="sort">Sort By:</label>
+        <select id="sort" name="sort" class="sd-select" onchange="this.form.submit()">
+          <option value="best" {{ "selected" if sort == "best" }}>Best Matches</option>
+          <option value="newest" {{ "selected" if sort == "newest" }}>Newest</option>
+          <option value="price_asc" {{ "selected" if sort == "price_asc" }}>Price: Low to High</option>
+          <option value="price_desc" {{ "selected" if sort == "price_desc" }}>Price: High to Low</option>
+        </select>
+      </form>
+    </div>
+
+    {% if products %}
+     <section class="product-grid">
+        {% for p in products %}{% include "_card.html" %}{% endfor %}
+      </section>
+    {% else %}
+      <p class="sd-empty">This shop has no products yet. Please check back soon.</p>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

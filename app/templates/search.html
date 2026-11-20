@@ -1,0 +1,31 @@
+﻿{% extends "base.html" %}
+{% block title %}Search - The Style Club{% endblock %}
+
+{% block content %}
+<section class="collection-banner">
+  <div class="search-title-wrap">
+    <h1 class="search-title">search</h1>
+  </div>
+</section>
+
+<div class="page collection-page">
+  <div class="toolbar">
+    <div>
+      <h2 class="toolbar-title">{{ 'RESULTS FOR "' ~ q|upper ~ '"' if q else 'SEARCH PRODUCTS' }}</h2>
+      {% if q %}
+        <p class="toolbar-count">{{ products|length }} {{ "PRODUCT" if products|length == 1 else "PRODUCTS" }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if q and products %}
+    <section class="product-grid">
+      {% for p in products %}{% include "_card.html" %}{% endfor %}
+    </section>
+  {% elif q %}
+    <p class="search-empty">No products match "{{ q }}". Try a different word, such as a color, material, or shop name.</p>
+  {% else %}
+    <p class="search-empty">Type a product, material, color, or shop name in the search box above.</p>
+  {% endif %}
+</div>
+{% endblock %}

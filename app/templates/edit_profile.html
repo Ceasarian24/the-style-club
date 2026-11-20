@@ -1,0 +1,195 @@
+﻿{% extends "base.html" %}
+{% block title %}Edit Profile - The Style Club{% endblock %}
+
+{% macro fld(f, placeholder="") -%}
+<div class="ef">
+  <label for="{{ f.id }}">{{ f.label.text }}</label>
+  {{ f(class="ef-input", placeholder=placeholder) }}
+  {% for e in f.errors %}<small class="error">{{ e }}</small>{% endfor %}
+</div>
+{%- endmacro %}
+
+{% block content %}
+<div class="ed-page">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <p class="flash {{ category }}">{{ message }}</p>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="ed-card">
+    <div class="ed-head">
+      <div class="ed-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg>
+      </div>
+      <div>
+        <h1>Delivery &amp; Contact Information</h1>
+        <p>Please enter your details below to continue.</p>
+      </div>
+    </div>
+
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="ed-row ed-row-3">
+        {{ fld(form.full_name, "Enter your full name") }}
+        <div class="ef">
+          <label for="email">Email Address</label>
+          <input class="ef-input" id="email" value="{{ current_user.email }}" disabled>
+          <small class="ef-hint">Email changes will need verification.</small>
+        </div>
+        {{ fld(form.phone, "+1 (555) 000-0000") }}
+      </div>
+
+      <div class="ed-row ed-row-country">
+        <div class="ef">
+          <label for="{{ form.country.id }}">{{ form.country.label.text }}</label>
+          {{ form.country(class="ef-input ef-select") }}
+          {% for e in form.country.errors %}<small class="error">{{ e }}</small>{% endfor %}
+        </div>
+        {{ fld(form.street_address, "Enter street address") }}
+      </div>
+
+      <div class="ed-row ed-row-psgc">
+        <div class="ef">
+          <label>Region</label>
+          <select id="psgcRegion" class="ef-input ef-select"></select>
+        </div>
+        <div class="ef">
+          <label>Province</label>
+          <select id="psgcProvince" class="ef-input ef-select" disabled></select>
+        </div>
+        <div class="ef">
+          <label>City / Municipality</label>
+          <select id="psgcCity" class="ef-input ef-select" disabled></select>
+        </div>
+        <div class="ef">
+          <label>Barangay</label>
+          <select id="psgcBarangay" class="ef-input ef-select" disabled></select>
+        </div>
+      </div>
+
+      <div class="ed-row ed-row-country">
+        {{ fld(form.apartment, "Apt, Suite, Unit") }}
+        <div class="ef">
+          <label for="{{ form.city.id }}">{{ form.city.label.text }}</label>
+          {{ form.city(class="ef-input", readonly=True) }}
+          {% for e in form.city.errors %}<small class="error">{{ e }}</small>{% endfor %}
+        </div>
+      </div>
+
+      <div class="ed-row ed-row-half">
+        <div class="ef">
+          <label for="{{ form.province.id }}">{{ form.province.label.text }}</label>
+          {{ form.province(class="ef-input", readonly=True) }}
+          {% for e in form.province.errors %}<small class="error">{{ e }}</small>{% endfor %}
+        </div>
+        {{ fld(form.postal_code, "10001") }}
+      </div>
+
+      <div class="ef ef-wide">
+        <label for="{{ form.delivery_instructions.id }}">{{ form.delivery_instructions.label.text }}</label>
+        {{ form.delivery_instructions(class="ef-input ef-textarea", placeholder="Leave at front door if not home.", rows=4) }}
+        {% for e in form.delivery_instructions.errors %}<small class="error">{{ e }}</small>{% endfor %}
+      </div>
+
+      <div class="ef ef-wide">
+        <span class="ef-label">{{ form.delivery_preference.label.text }}</span>
+        <div class="ed-radios">
+          {% for sub in form.delivery_preference %}
+            <label class="ed-radio">
+              {{ sub(class="ed-radio-input") }}
+              <span>{{ sub.label.text }}</span>
+            </label>
+          {% endfor %}
+        </div>
+        {% for e in form.delivery_preference.errors %}<small class="error">{{ e }}</small>{% endfor %}
+      </div>
+
+      <div class="ed-foot">
+        <span class="ed-note">All fields are required unless marked optional.</span>
+        <div class="ed-actions">
+          <a href="{{ url_for('auth.account') }}" class="ed-cancel">Cancel</a>
+          <button type="submit" class="ed-save">Save &amp; Continue <span>&rarr;</span></button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  const API = "https://psgc.gitlab.io/api";
+  const region = document.getElementById("psgcRegion");
+  const province = document.getElementById("psgcProvince");
+  const city = document.getElementById("psgcCity");
+  const barangay = document.getElementById("psgcBarangay");
+  const provInput = document.getElementById("{{ form.province.id }}");
+  const cityInput = document.getElementById("{{ form.city.id }}");
+
+  async function getList(url) {
+    try { const r = await fetch(url); return r.ok ? await r.json() : []; }
+    catch (e) { return []; }
+  }
+
+  function fill(select, items, placeholder) {
+    select.innerHTML = "";
+    const first = document.createElement("option");
+    first.value = ""; first.textContent = placeholder;
+    select.appendChild(first);
+    items.sort((a, b) => a.name.localeCompare(b.name)).forEach(i => {
+      const o = document.createElement("option");
+      o.value = i.code; o.textContent = i.name;
+      select.appendChild(o);
+    });
+    select.disabled = false;
+  }
+
+  function reset(select, placeholder) { fill(select, [], placeholder); select.disabled = true; }
+  const selName = s => s.value ? s.options[s.selectedIndex].text : "";
+
+  // Province and City inputs follow the dropdowns
+  function sync() {
+    provInput.value = selName(province) || selName(region);
+    cityInput.value = selName(city);
+  }
+
+  getList(`${API}/regions/`).then(list => fill(region, list, "Select region"));
+
+  region.addEventListener("change", async () => {
+    reset(province, "Select province");
+    reset(city, "Select city");
+    reset(barangay, "Select barangay");
+    sync();
+    if (!region.value) return;
+
+    const provinces = await getList(`${API}/regions/${region.value}/provinces/`);
+    if (provinces.length) {
+      fill(province, provinces, "Select province");
+    } else {
+      // NCR has no provinces, so load its cities directly
+      province.innerHTML = '<option value="">Not applicable</option>';
+      fill(city, await getList(`${API}/regions/${region.value}/cities-municipalities/`), "Select city");
+    }
+    sync();
+  });
+
+  province.addEventListener("change", async () => {
+    reset(city, "Select city");
+    reset(barangay, "Select barangay");
+    sync();
+    if (!province.value) return;
+    fill(city, await getList(`${API}/provinces/${province.value}/cities-municipalities/`), "Select city");
+    sync();
+  });
+
+  city.addEventListener("change", async () => {
+    reset(barangay, "Select barangay");
+    sync();
+    if (!city.value) return;
+    fill(barangay, await getList(`${API}/cities-municipalities/${city.value}/barangays/`), "Select barangay");
+    sync();
+  });
+})();
+</script>
+{% endblock %}

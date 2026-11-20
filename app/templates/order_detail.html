@@ -1,0 +1,75 @@
+﻿{% extends "base.html" %}
+{% block title %}Order {{ order.code }} - The Style Club{% endblock %}
+
+{% block content %}
+{% set status_labels = {'to_pay': 'To Pay', 'to_ship': 'To Ship', 'to_receive': 'To Receive', 'delivered': 'Delivered', 'cancelled': 'Cancelled'} %}
+<div class="odv-page">
+
+  <a class="odv-back" href="{{ url_for('auth.account', tab='orders') }}">&lsaquo; Back to My Orders</a>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <p class="flash {{ category }}">{{ message }}</p>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="odv-head">
+    <div>
+      <h1>Order #{{ order.code }}</h1>
+      <p class="odv-date">Placed on {{ order.created_at.strftime('%b %d, %Y') }}</p>
+    </div>
+    <span class="odv-status odv-{{ order.status }}">{{ status_labels.get(order.status, order.status) }}</span>
+  </div>
+
+  <div class="odv-card">
+    {% for i in order.items %}
+      {% set img = i.variant.product.images[0].path if (i.variant and i.variant.product.images) else None %}
+      <div class="odv-item">
+        <div class="odv-thumb">
+          {% if img %}<img src="{{ url_for('static', filename=img) }}" alt="">{% endif %}
+        </div>
+        <div class="odv-item-info">
+          <p class="odv-name">{{ i.product_name }}</p>
+          {% set mat = i.material or (i.variant.material if i.variant else None) %}
+          <p class="odv-meta">
+            {% if i.color_name %}Color: {{ i.color_name }} &middot; {% endif %}{% if i.size %}Size: {{ i.size }} &middot; {% endif %}{% if mat %}Material: {{ mat }} &middot; {% endif %}Qty: {{ i.qty }}
+          </p>
+        </div>
+        <strong class="odv-price">{{ (i.unit_price_cents * i.qty)|peso }}</strong>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="odv-grid">
+    <div class="odv-card">
+      <h2>Delivery</h2>
+      <p class="odv-value">{{ order.ship_name }} &middot; {{ order.ship_phone }}</p>
+      <p class="odv-muted">{{ order.ship_address }}</p>
+      {% if order.status != 'delivered' and order.status != 'cancelled' %}
+        <p class="odv-line"><span>Expected delivery</span><span>{{ delivery_window }}</span></p>
+      {% endif %}
+      <p class="odv-line"><span>Method</span><span>{{ 'Express' if order.shipping_method == 'express' else 'Standard Local' }}</span></p>
+      <p class="odv-line"><span>Payment</span><span>Cash on Delivery</span></p>
+    </div>
+
+    <div class="odv-card">
+      <h2>Total</h2>
+      <p class="odv-line"><span>Subtotal</span><span>{{ order.subtotal_cents|peso }}</span></p>
+      {% if order.discount_cents %}
+        <p class="odv-line"><span>Voucher ({{ order.voucher_code }})</span><span>-{{ order.discount_cents|peso }}</span></p>
+      {% endif %}
+      <p class="odv-line"><span>Shipping</span><span>{{ order.shipping_fee_cents|peso }}</span></p>
+      <p class="odv-line odv-grand"><span>Total</span><span>{{ order.total_cents|peso }}</span></p>
+    </div>
+  </div>
+
+  {% if order.status == 'to_ship' %}
+    <form method="post" action="{{ url_for('auth.cancel_order', order_id=order.id) }}"
+          onsubmit="return confirm('Cancel this order? This cannot be undone.');" class="odv-cancel-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="odv-cancel">Cancel Order</button>
+    </form>
+  {% endif %}
+
+</div>
+{% endblock %}

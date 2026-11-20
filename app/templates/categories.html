@@ -1,0 +1,66 @@
+﻿{% extends "base.html" %}
+{% block title %}Categories - The Style Club{% endblock %}
+
+{% block content %}
+<!-- ===== FULL-BLEED EDITORIAL HERO ===== -->
+<section class="cat-hero">
+  <img src="{{ url_for('static', filename='img/categories/hero-banner.png') }}" alt="Find your classics">
+  <div class="cat-hero-overlay">
+    <h1 class="cat-hero-title">find your<br>classics</h1>
+    <p class="cat-hero-tagline">
+      Explore timeless pieces<br>
+      made for every<br>
+      occasion.
+    </p>
+  </div>
+</section>
+
+<!-- ===== EXPLORE CATEGORIES (8 CARDS) ===== -->
+<section class="cat-section">
+  <div class="cat-container">
+    <h2 class="cat-heading">EXPLORE CATEGORIES</h2>
+
+    <div class="cat-grid">
+      <a href="{{ url_for('shop.new_arrivals') }}" class="cat-card">
+        <img src="{{ url_for('static', filename='img/categories/cat-new-arrivals.png') }}" alt="New Arrivals">
+        <span class="cat-label">NEW ARRIVALS</span>
+      </a>
+
+      <a href="{{ url_for('shop.best_sellers') }}" class="cat-card">
+        <img src="{{ url_for('static', filename='img/categories/cat-best-sellers.png') }}" alt="Best Sellers">
+        <span class="cat-label">BEST SELLERS</span>
+      </a>
+
+      <a href="{{ url_for('shop.shop_all') }}" class="cat-card">
+        <img src="{{ url_for('static', filename='img/categories/cat-all-time-favs.png') }}" alt="All Time Favs">
+        <span class="cat-label">ALL TIME FAVS</span>
+      </a>
+
+      <a href="{{ url_for('shop.shop_all') }}" class="cat-card">
+        <img src="{{ url_for('static', filename='img/categories/cat-limited-items.png') }}" alt="Limited Items">
+        <span class="cat-label">LIMITED ITEMS</span>
+      </a>
+
+      <a href="{{ url_for('shop.shop_detail', shop_slug='the-handbag-club') }}" class="cat-card">
+        <img src="{{ url_for('static', filename='img/shop_all/cat-bags.png') }}" alt="Bags">
+        <span class="cat-label">BAGS</span>
+      </a>
+
+      <a href="{{ url_for('shop.shop_detail', shop_slug='wardrobe-edit') }}" class="cat-card">
+        <img src="{{ url_for('static', filename='img/shop_all/cat-mens.png') }}" alt="Men's">
+        <span class="cat-label">MEN’S</span>
+      </a>
+
+      <a href="{{ url_for('shop.shop_detail', shop_slug='wardrobe-edit') }}" class="cat-card">
+        <img src="{{ url_for('static', filename='img/shop_all/cat-womens.png') }}" alt="Women's">
+        <span class="cat-label">WOMEN’S</span>
+      </a>
+
+      <a href="{{ url_for('shop.shop_detail', shop_slug='wardrobe-edit') }}" class="cat-card">
+        <img src="{{ url_for('static', filename='img/shop_all/cat-shoes.png') }}" alt="Shoes">
+        <span class="cat-label">SHOES</span>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

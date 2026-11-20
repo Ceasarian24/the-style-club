@@ -1,0 +1,61 @@
+﻿{% extends "base.html" %}
+{% block title %}Wishlist - The Style Club{% endblock %}
+
+{% block content %}
+<div class="wl-page">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <p class="flash {{ category }}">{{ message }}</p>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="wl-head">
+    <h1>Wishlist</h1>
+    <span>{{ items|length }} {{ "Item" if items|length == 1 else "Items" }}</span>
+  </div>
+
+  {% if items %}
+    <ul class="wl-list">
+      {% for v in items %}
+        {% set p = v.product %}
+        <li class="wl-item">
+          <div class="wl-thumb">
+            {% set v_imgs = p.images|selectattr('variant_id', 'equalto', v.id)|list %}
+            {% if not v_imgs %}
+              {% set same_color_ids = p.variants|selectattr('color_name', 'equalto', v.color_name)|map(attribute='id')|list %}
+              {% set v_imgs = p.images|selectattr('variant_id', 'in', same_color_ids)|list %}
+            {% endif %}
+            {% set img_path = v_imgs[0].path if v_imgs else (p.images[0].path if p.images else '') %}
+            {% if img_path %}<img src="{{ url_for('static', filename=img_path) }}" alt="{{ p.name }}">{% endif %}
+          </div>
+
+          <div class="wl-info">
+            <p class="wl-name">{{ p.name }}</p>
+            <p class="wl-meta">Color: {{ v.color_name }}{% if v.size %} &middot; Size: {{ v.size }}{% endif %}{% if v.material %} &middot; Material: {{ v.material }}{% endif %}</p>           
+            <p class="wl-saved">Saved to wishlist</p>
+          </div>
+
+          <div class="wl-side">
+            <form method="post" action="{{ url_for('cart.add') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="variant_id" value="{{ v.id }}">
+              <input type="hidden" name="qty" value="1">
+              <input type="hidden" name="next" value="{{ url_for('wishlist.view_wishlist') }}">
+              <button type="submit" class="wl-cart">ADD TO CART</button>
+            </form>
+            <p class="wl-price">{{ v.price_cents|peso }}</p>
+            <form method="post" action="{{ url_for('wishlist.remove') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="variant_id" value="{{ v.id }}">
+              <button type="submit" class="wl-remove">Remove</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="wl-empty">Your wishlist is empty.</p>
+    <p class="wl-empty"><a href="{{ url_for('shop.shop_all') }}">Continue shopping</a></p>
+  {% endif %}
+</div>
+{% endblock %}

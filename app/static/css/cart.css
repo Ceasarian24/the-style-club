@@ -1,0 +1,82 @@
+﻿/* ===== Shopping bag ===== */
+/* ===== Shopping bag ===== */
+.cart-page {
+  max-width: none;
+  margin: 0;
+  padding: 0 5% 60px;
+}
+
+.cart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 64px 0 36px;
+}
+.cart-head h1 {
+  font-family: "DM Sans", sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+}
+.cart-head span { font-size: 15px; color: var(--muted); }
+
+.cart-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  padding: 18px 0 0;
+  margin-top: 0;
+}
+
+.cart-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 178px 1fr auto;
+  gap: 24px;
+  align-items: center;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cart-thumb { background: #f0eeee; height: 160px; display: flex; align-items: center; justify-content: center; }
+.cart-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+
+.cart-pick { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.cart-pick input { width: 18px; height: 18px; accent-color: #1a1a1a; margin: 0; }
+.cart-name { font-family: "Libre Baskerville", serif; font-size: 18px; color: var(--maroon); }
+.cart-meta { margin: 10px 0 6px 30px; font-size: 14px; font-weight: 700; }
+.cart-sold { margin: 0 0 0 30px; font-size: 14px; color: var(--muted); }
+
+.cart-side { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.qty-form { display: flex; align-items: center; gap: 0; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.qty-form button {
+  width: 36px; height: 36px; border: none; background: #fff; cursor: pointer;
+  font-size: 16px; font-weight: 700;
+}
+.qty-form button:disabled { color: #bbb; cursor: default; }
+.qty-form span { min-width: 36px; text-align: center; font-weight: 700; }
+.cart-price { margin: 4px 0 0; font-size: 18px; font-weight: 700; }
+.cart-remove { background: none; border: none; color: var(--maroon); text-decoration: underline; cursor: pointer; font: inherit; font-size: 14px; padding: 0; }
+
+.cart-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 0 0;
+}
+.cart-selected {
+  background: #f0eeee; border-radius: 999px; padding: 8px 18px; font-size: 14px; font-weight: 600;
+}
+.place-order {
+  background: #1a1a1a; color: #fff; border: none; border-radius: 999px;
+  padding: 12px 26px; font-family: "DM Sans", sans-serif; font-weight: 700; font-size: 15px; cursor: pointer;
+}
+
+.cart-empty { text-align: center; color: var(--muted); padding: 40px 0; font-size: 16px; }
+
+.place-order { display: inline-block; text-decoration: none; }
+
+@media (max-width: 700px) {
+  .cart-item { grid-template-columns: 110px 1fr; }
+  .cart-side { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; }
+  .cart-thumb { height: 110px; }
+}

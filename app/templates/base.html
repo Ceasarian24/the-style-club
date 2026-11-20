@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/tab_icon.png') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}The Style Club{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=DM+Serif+Display&family=Libre+Baskerville:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/product.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/catalog.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/best_sellers.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/shop_all.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/shop_detail.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/categories.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/wishlist.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_profile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/checkout.css') }}">
+</head>
+
+<script>
+(function () {
+  // reads the garment's own colour from the photo, ignoring the pale studio background
+  function dominantColor(src, done) {
+    const img = new Image();
+    img.onload = () => {
+      const S = 80, canvas = document.createElement("canvas");
+      canvas.width = canvas.height = S;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, S, S);
+      const d = ctx.getImageData(0, 0, S, S).data;
+      const lo = Math.round(S * 0.15), hi = Math.round(S * 0.85);
+      const buckets = {};
+      for (let y = lo; y < hi; y++) {
+        for (let x = lo; x < hi; x++) {
+          const i = (y * S + x) * 4;
+          const r = d[i], g = d[i + 1], b = d[i + 2];
+          const max = Math.max(r, g, b), min = Math.min(r, g, b);
+          // skip the background: very light or nearly grey pixels
+          if (max > 225 && max - min < 25) continue;   // white / light grey
+          if (max - min < 18) continue;                // neutral grey, black, or shadow
+          const key = (r >> 5) + "-" + (g >> 5) + "-" + (b >> 5);
+          const bk = buckets[key] || (buckets[key] = { n: 0, r: 0, g: 0, b: 0 });
+          bk.n++; bk.r += r; bk.g += g; bk.b += b;
+        }
+      }
+      let best = null;
+      for (const k in buckets) if (!best || buckets[k].n > best.n) best = buckets[k];
+      // only change the swatch if a real colour was found; otherwise keep the database colour
+      if (best && best.n > 20) {
+        done(`rgb(${Math.round(best.r / best.n)}, ${Math.round(best.g / best.n)}, ${Math.round(best.b / best.n)})`);
+      }
+    };
+    img.src = src;
+  }
+
+  document.querySelectorAll("[data-dominant][data-img]").forEach(el => {
+    dominantColor(el.dataset.img, c => el.style.background = c);
+  });
+})();
+</script>
+
+<body>
+<header class="site-header">
+  <a href="/" class="logo">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="The Style Club">
+  </a>
+</header>
+<div class="header-row">
+  <div class="header-icons">
+    <a href="{{ url_for('auth.account') if current_user.is_authenticated else url_for('auth.login') }}" aria-label="Account">
+      <img src="{{ url_for('static', filename='img/icons/user.png') }}" alt="">
+    </a>
+    <a href="{{ url_for('cart.view_cart') }}" aria-label="Cart">
+      <img src="{{ url_for('static', filename='img/icons/cart.png') }}" alt="">
+    </a>
+    <a href="{{ url_for('wishlist.view_wishlist') }}" aria-label="Wishlist">
+      <img src="{{ url_for('static', filename='img/icons/heart.png') }}" alt="">
+    </a>
+  </div>
+
+  <nav class="main-nav">
+    <a href="{{ url_for('shop.home') }}" class="{{ 'active' if request.endpoint == 'shop.home' }}">HOME</a>
+    <a href="{{ url_for('shop.new_arrivals') }}" class="{{ 'active' if request.endpoint == 'shop.new_arrivals' }}">NEW ARRIVALS</a>
+    <a href="{{ url_for('shop.shop_all') }}" class="{{ 'active' if request.endpoint == 'shop.shop_all' }}">SHOP ALL</a>
+    <a href="{{ url_for('shop.categories') }}" class="{{ 'active' if request.endpoint == 'shop.categories' }}">CATEGORIES</a>
+    <a href="{{ url_for('shop.best_sellers') }}" class="{{ 'active' if request.endpoint == 'shop.best_sellers' }}">BEST SELLERS</a>
+  </nav>
+
+    <form class="search-box" method="get" action="{{ url_for('shop.search') }}" role="search">
+    <button type="submit" class="search-submit" aria-label="Search">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+        <circle cx="10" cy="10" r="7"/>
+        <line x1="15.5" y1="15.5" x2="22" y2="22"/>
+      </svg>
+    </button>
+    <input class="search" type="search" name="q" value="{{ request.args.get('q', '') }}" placeholder="Search products" aria-label="Search products">
+  </form>
+</div>
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-cols">
+      <div>
+        <h4>CUSTOMER CARE</h4>
+        <a href="#">Contact Us</a>
+        <a href="#">Feedback</a>
+        <a href="#">Shipping Details &amp; Fees</a>
+        <a href="#">Terms of Sale</a>
+        <a href="#">Returns &amp; Exchange</a>
+        <a href="#">Warranty</a>
+        <a href="#">FAQ</a>
+      </div>
+      <div>
+        <h4>SERVICES</h4>
+        <a href="#">Store Locator</a>
+        <a href="#">Lifetime Leather Care</a>
+        <a href="#">Product Care</a>
+        <a href="#">Repairs</a>
+      </div>
+      <div>
+        <h4>ABOUT US</h4>
+        <a href="#">Our Story</a>
+        <a href="#">Careers</a>
+        <a href="#">Tapestry</a>
+        <a href="#">Investor Relations</a>
+      </div>
+    </div>
+
+    <div class="newsletter">
+      {% if not current_user.is_authenticated %}
+      <form id="newsletterForm" class="newsletter-form" method="get" action="{{ url_for('auth.register') }}">
+        <input type="email" name="email" placeholder="Enter your Email" required>
+        <button type="submit">SIGN UP</button>
+      </form>
+      <label class="consent">
+        <input type="checkbox" form="newsletterForm" required>
+        <span>By signing up, you consent to receive emails about Coach’s latest collections, offers, and news, as well as information on how to participate in Coach events, competitions or promotions. You have certain rights under applicable privacy laws, and can withdraw your consent at any time. See our Privacy Policy for more information.
+          <a href="#" data-legal="privacy">Privacy Policy</a> for more information</span>
+      </label>
+      {% endif %}
+      <div class="socials">
+        <a href="#" aria-label="Instagram"><img src="{{ url_for('static', filename='img/icons/instagram.png') }}" alt=""></a>
+        <a href="#" aria-label="Facebook"><img src="{{ url_for('static', filename='img/icons/facebook.png') }}" alt=""></a>
+        <a href="#" aria-label="X"><img src="{{ url_for('static', filename='img/icons/x.png') }}" alt=""></a>
+        <a href="#" aria-label="TikTok"><img src="{{ url_for('static', filename='img/icons/tiktok.png') }}" alt=""></a>
+        <a href="#" aria-label="YouTube"><img src="{{ url_for('static', filename='img/icons/youtube.png') }}" alt=""></a>
+      </div>
+    </div>
+  </div>
+  <img class="footer-star" src="{{ url_for('static', filename='img/star.png') }}" alt="">
+  <img class="footer-logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="The Style Club">
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+﻿<a class="pc" href="{{ url_for('shop.product_detail', slug=p.slug) }}">
+  <div class="pc-img">
+    {% if p.images %}
+      <img src="{{ url_for('static', filename=p.images[0].path) }}" alt="{{ p.name }}">
+    {% endif %}
+    {% if p.is_best_seller %}
+      <span class="pc-badge">Best Seller <span class="pc-star">&#9733;</span></span>
+    {% endif %}
+  </div>
+  <p class="pc-name">{{ p.name }}</p>
+ {% set seen_hex = [] %}
+  <div class="pc-swatches">
+    {% for v in p.variants %}
+      {% set hex = (v.color_hex or '')|trim|lower %}
+      {% if hex and hex not in seen_hex %}
+        {% set _ = seen_hex.append(hex) %}
+        <span class="pc-swatch" style="background:{{ v.color_hex }}" title="{{ v.color_name }}"></span>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <p class="pc-price">{{ p.min_price_cents|peso }}</p>
+</a>

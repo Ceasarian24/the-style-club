@@ -1,0 +1,325 @@
+﻿{% extends "base.html" %}
+{% block title %}Checkout - The Style Club{% endblock %}
+
+{% block content %}
+<div class="co-page">
+
+  <a class="co-back" href="{{ url_for('cart.view_cart') }}">&lsaquo; Back</a>
+
+  {% if errors %}
+    <div class="flash error">
+      {% for e in errors %}<p>{{ e }}</p>{% endfor %}
+    </div>
+  {% endif %}
+  {% if notice %}
+    <div class="flash success"><p>{{ notice }}</p></div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('checkout.checkout_page') }}" id="coForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <section class="co-address">
+      <div class="co-address-main">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
+        <div>
+          <p class="co-addr-name">{{ ship.name }} <span>{{ ship.phone }}</span></p>
+          <p class="co-addr-line">{{ ship.address }}</p>
+        </div>
+      </div>
+      <a class="co-change" href="{{ url_for('auth.edit_profile') }}">Change &rsaquo;</a>
+    </section>
+
+    <h2 class="co-heading">Order Summary</h2>
+    <div class="co-summary">
+      <div class="co-sum-head">
+        <span>Item</span><span>Quantity</span><span>Price</span><span>Total</span>
+      </div>
+      {% for v, qty in lines %}
+        <div class="co-line">
+          <div class="co-item">
+            <div class="co-thumb">
+              {% set p = v.product %}
+              {% set v_imgs = p.images|selectattr('variant_id', 'equalto', v.id)|list %}
+              {% if not v_imgs %}
+                {% set same_color_ids = p.variants|selectattr('color_name', 'equalto', v.color_name)|map(attribute='id')|list %}
+                {% set v_imgs = p.images|selectattr('variant_id', 'in', same_color_ids)|list %}
+              {% endif %}
+              {% set img_path = v_imgs[0].path if v_imgs else (p.images[0].path if p.images else '') %}
+              {% if img_path %}<img src="{{ url_for('static', filename=img_path) }}" alt="{{ p.name }}">{% endif %}
+            </div>
+            <div>
+              <p class="co-name">{{ v.product.name }}</p>
+              <p class="co-meta">Color : {{ v.color_name }}{% if v.size %} &middot; Size : {{ v.size }}{% endif %}{% if v.material %} &middot; Material : {{ v.material }}{% endif %}</p>
+              <p class="co-sold">Sold By : {{ v.product.shop.name }}</p>
+            </div>
+          </div>
+          <span>{{ qty }}</span>
+          <span>{{ v.price_cents|peso }}</span>
+          <span class="co-strong">{{ (v.price_cents * qty)|peso }}</span>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="co-grid">
+      <section>
+        <h2 class="co-heading">Delivery Option</h2>
+        <div class="co-ship-form">
+          <label class="co-opt {{ 'on' if delivery == 'default' }}">
+            <input type="radio" name="delivery" value="default" {{ 'checked' if delivery == 'default' }}>
+            <span class="co-opt-text"><strong>Default (same as billing address)</strong></span>
+          </label>
+          <label class="co-opt {{ 'on' if delivery == 'alt' }}">
+            <input type="radio" name="delivery" value="alt" {{ 'checked' if delivery == 'alt' }}>
+            <span class="co-opt-text"><strong>Add an alternative delivery address</strong></span>
+          </label>
+        </div>
+
+                <div class="co-alt" id="altFields" {{ 'hidden' if delivery != 'alt' }}>
+          {% for key, label in alt_fields %}
+            {% if key == 'alt_region' %}
+              <div class="co-field">
+                <label>Region</label>
+                <select id="psgcRegion"></select>
+              </div>
+              <div class="co-field">
+                <label>Province</label>
+                <select id="psgcProvince" disabled></select>
+              </div>
+              <div class="co-field">
+                <label>City / Municipality</label>
+                <select id="psgcCity" disabled></select>
+              </div>
+              <div class="co-field">
+                <label>Barangay</label>
+                <select id="psgcBarangay" disabled></select>
+              </div>
+              <div class="co-field">
+                <label for="alt_region">{{ label }}</label>
+                <input type="text" id="alt_region" name="alt_region" value="{{ alt_values[key] }}" readonly>
+              </div>
+            {% else %}
+              <div class="co-field">
+                <label for="{{ key }}">{{ label }}</label>
+                <input type="text" id="{{ key }}" name="{{ key }}" value="{{ alt_values[key] }}">
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </section>
+
+      <section>
+        <h2 class="co-heading">Shipping Option</h2>
+        <p class="co-sub">STYLE CLUB SUPPORTED LOGISTICS</p>
+        <div class="co-ship-form">
+          {% for key, opt in shipping_options.items() %}
+            <label class="co-opt {{ 'on' if key == method }}">
+              <input type="radio" name="shipping" value="{{ key }}" {{ 'checked' if key == method }}>
+              <span class="co-opt-text">
+                <strong>{{ opt.label }}</strong>
+                <small>{{ opt.detail }}</small>
+              </span>
+              <span class="co-opt-fee">{{ opt.fee_cents|peso }}</span>
+            </label>
+          {% endfor %}
+        </div>
+
+        <div class="co-voucher">
+          <span>Shop Voucher</span>
+          {% if voucher %}
+            <span class="co-voucher-applied">
+              {{ voucher.code }} &middot; <strong>-{{ discount|peso }}</strong>
+              <button type="submit" name="action" value="remove_voucher" class="co-voucher-remove">Remove</button>
+            </span>
+          {% else %}
+            <button type="button" class="co-voucher-open" id="voucherOpen">Select or Enter Code &rsaquo;</button>
+          {% endif %}
+        </div>
+
+        <div class="co-total-line">
+          <span>Total {{ item_count }} item(s)</span>
+          <strong>{{ total|peso }}</strong>
+        </div>
+      </section>
+    </div>
+
+            <section class="co-billing">
+              <h2 class="co-heading">Billing Summary</h2>
+              <div class="co-billing-grid">
+                <div class="co-billing-left">
+                  <div class="co-bill">
+                    <div class="co-bill-row"><span>Merchandise Subtotal</span><span>{{ subtotal|peso }}</span></div>
+                    {% if discount %}
+                      <div class="co-bill-row"><span>Voucher ({{ voucher.code }})</span><span>-{{ discount|peso }}</span></div>
+                    {% endif %}
+                    <div class="co-bill-row"><span>Shipping Subtotal</span><span>{{ fee|peso }}</span></div>
+                    {% if shipping_discount %}
+                      <div class="co-bill-row co-bill-neg"><span>Shipping Discount Subtotal</span><span>-{{ shipping_discount|peso }}</span></div>
+                    {% endif %}
+                    <div class="co-bill-total"><span>Total Payment</span><span>{{ total|peso }}</span></div>
+                  </div>
+                  <button type="submit" name="action" value="place" class="co-place">Place Order</button>
+                </div>
+
+                <div class="co-billing-right">
+                  <p class="co-legal">By clicking on 'Place Order', you agree (i) to make your purchase from Global-e as merchant of record for this transaction, subject to Global-e's <a href="#">Terms of Sale</a>; (ii) that your information will be handled by Global-e in accordance with the Global-e <a href="#">Privacy Policy</a>; and (iii) that Global-e will share your information (excluding the payment details) with Coach Stores Limited.</p>
+                </div>
+              </div>
+            </section>
+
+    <!-- Voucher popup -->
+    <div class="vc-modal" id="voucherModal" hidden>
+      <div class="vc-box">
+        <div class="vc-head">
+          <h3>Shop Voucher</h3>
+          <button type="button" class="vc-close" id="voucherClose" aria-label="Close">&times;</button>
+        </div>
+
+        {% if available %}
+          <ul class="vc-list">
+            {% for v in available %}
+              <li class="vc-item">
+                <div>
+                  <strong>{{ v.title }}</strong>
+                  <small>{{ v.code }} &middot; {{ v.describe() }}</small>
+                </div>
+                {% if voucher and voucher.id == v.id %}
+                  <span class="vc-applied">Applied</span>
+                {% else %}
+                  <button type="submit" name="apply_code" value="{{ v.code }}" class="vc-apply">Apply</button>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="vc-none">No vouchers available right now. Enter a code below.</p>
+          <div class="vc-code">
+            <input type="text" name="voucher_code" placeholder="Enter voucher code" autocomplete="off">
+            <button type="submit" name="action" value="apply_voucher" class="vc-apply">Apply</button>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+(function () {
+  const form = document.getElementById("coForm");
+  const alt = document.getElementById("altFields");
+
+  // show or hide the alternative address fields
+  document.querySelectorAll('input[name=delivery]').forEach(r => r.addEventListener("change", () => {
+    alt.hidden = document.querySelector('input[name=delivery]:checked').value !== "alt";
+  }));
+
+  // changing the shipping option refreshes the totals without placing the order
+  document.querySelectorAll('input[name=shipping]').forEach(r => r.addEventListener("change", () => {
+    form.requestSubmit();
+  }));
+
+  // voucher popup
+  const modal = document.getElementById("voucherModal");
+  const open = document.getElementById("voucherOpen");
+  if (open) open.addEventListener("click", () => modal.hidden = false);
+  document.getElementById("voucherClose").addEventListener("click", () => modal.hidden = true);
+  modal.addEventListener("click", e => { if (e.target === modal) modal.hidden = true; });
+})();
+</script>
+
+<script>
+(function () {
+  const API = "https://psgc.gitlab.io/api";
+  const region = document.getElementById("psgcRegion");
+  const province = document.getElementById("psgcProvince");
+  const city = document.getElementById("psgcCity");
+  const barangay = document.getElementById("psgcBarangay");
+  const out = document.getElementById("alt_region");
+
+  async function getList(url) {
+    try {
+      const res = await fetch(url);
+      return res.ok ? await res.json() : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function fill(select, items, placeholder) {
+    select.innerHTML = "";
+    const first = document.createElement("option");
+    first.value = "";
+    first.textContent = placeholder;
+    select.appendChild(first);
+    items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.code;
+      opt.textContent = item.name;
+      select.appendChild(opt);
+    });
+    select.disabled = false;
+  }
+
+  function reset(select, placeholder) {
+    fill(select, [], placeholder);
+    select.disabled = true;
+  }
+
+  function selectedName(select) {
+    return select.value ? select.options[select.selectedIndex].text : "";
+  }
+
+  function updateAddress() {
+    out.value = [selectedName(barangay), selectedName(city),
+                 selectedName(province), selectedName(region)]
+      .filter(Boolean).join(", ");
+  }
+
+  // 1. Regions load on page open
+  getList(`${API}/regions/`).then(list => fill(region, list, "Select region"));
+
+  // 2. Region chosen: load provinces (NCR has none, so load its cities directly)
+  region.addEventListener("change", async () => {
+    reset(province, "Select province");
+    reset(city, "Select city");
+    reset(barangay, "Select barangay");
+    updateAddress();
+    if (!region.value) return;
+
+    const provinces = await getList(`${API}/regions/${region.value}/provinces/`);
+    if (provinces.length) {
+      fill(province, provinces, "Select province");
+    } else {
+      province.innerHTML = '<option value="">Not applicable</option>';
+      province.disabled = true;
+      const cities = await getList(`${API}/regions/${region.value}/cities-municipalities/`);
+      fill(city, cities, "Select city");
+    }
+    updateAddress();
+  });
+
+  // 3. Province chosen: load cities
+  province.addEventListener("change", async () => {
+    reset(city, "Select city");
+    reset(barangay, "Select barangay");
+    updateAddress();
+    if (!province.value) return;
+    const cities = await getList(`${API}/provinces/${province.value}/cities-municipalities/`);
+    fill(city, cities, "Select city");
+    updateAddress();
+  });
+
+  // 4. City chosen: load barangays
+  city.addEventListener("change", async () => {
+    reset(barangay, "Select barangay");
+    updateAddress();
+    if (!city.value) return;
+    const list = await getList(`${API}/cities-municipalities/${city.value}/barangays/`);
+    fill(barangay, list, "Select barangay");
+    updateAddress();
+  });
+
+  barangay.addEventListener("change", updateAddress);
+})();
+</script>
+
+{% endblock %}

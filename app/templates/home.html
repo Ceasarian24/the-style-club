@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}The Style Club{% endblock %}
+
+{% block content %}
+<!-- ===== HERO SECTION ===== -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-word-top">a new</h1>
+
+    <p class="hero-tagline">
+      Meet your Next<br>Everyday Favorite.
+    </p>
+
+    <div class="hero-bag">
+      <img src="{{ url_for('static', filename='img/home/hero-bag.png') }}" alt="Etta Small Flap Shoulder Bag">
+    </div>
+
+    <div class="hero-meta">
+      <p class="hero-eyebrow">COACH <span class="dot">&bull;</span> FALL COLLECTION</p>
+      <h2 class="hero-title">Etta Small Flap Shoulder Bag</h2>
+      <a href="{{ url_for('shop.product_detail', slug='etta-small-flap-shoulder-bag') }}" class="hero-cta">SHOP NOW</a>
+    </div>
+
+    <span class="hero-word-bottom" aria-hidden="true">classic</span>
+  </div>
+</section>
+
+<!-- ===== CAMPAIGN / DISCOVER BAND ===== -->
+<section class="campaign">
+  <div class="campaign-inner">
+    <h2 class="campaign-title">Your style. Your soundtrack. Your story</h2>
+    <p class="campaign-sub">
+      This season we’re celebrating the moments where<br>
+      they come together—and create community
+    </p>
+
+    <div class="campaign-strip">
+      <img src="{{ url_for('static', filename='img/home/campaign-1.png') }}" alt="Campaign look 1">
+      <img src="{{ url_for('static', filename='img/home/campaign-2.png') }}" alt="Campaign look 2">
+      <img src="{{ url_for('static', filename='img/home/campaign-3.png') }}" alt="Campaign look 3">
+      <img src="{{ url_for('static', filename='img/home/campaign-4.png') }}" alt="Campaign look 4">
+      <img src="{{ url_for('static', filename='img/home/campaign-5.png') }}" alt="Campaign look 5">
+    </div>
+  </div>
+
+  <div class="discover-watermark" aria-hidden="true">DISCOVER</div>
+</section>
+
+<!-- ===== EXPLORE SECTION ===== -->
+<section class="explore">
+  <div class="explore-inner">
+    <p class="explore-eyebrow">THE COACH EDIT</p>
+    <h2 class="explore-title">EXPLORE</h2>
+    <p class="explore-sub">Explore the Coach Collection from Different Shops</p>
+
+    <div class="explore-grid">
+            <a href="{{ url_for('shop.best_sellers') }}" class="explore-card">
+        <img src="{{ url_for('static', filename='img/home/explore-bestsellers.png') }}" alt="Best Sellers">
+        <span class="explore-label">BEST SELLERS</span>
+      </a>
+
+            <a href="{{ url_for('shop.shop_detail', shop_slug='the-handbag-club') }}" class="explore-card">
+        <img src="{{ url_for('static', filename='img/home/explore-handbags.png') }}" alt="Handbags">
+        <span class="explore-label">HANDBAGS</span>
+      </a>
+
+            <a href="{{ url_for('shop.shop_detail', shop_slug='wardrobe-edit') }}" class="explore-card">
+        <img src="{{ url_for('static', filename='img/home/explore-clothes.png') }}" alt="Clothes & Shoes">
+        <span class="explore-label">CLOTHES &amp; SHOES</span>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}
